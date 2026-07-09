@@ -26,7 +26,7 @@ export function Sidebar({ activeTab, onTabChange, modelLoaded, modelLoading, mod
   const statusLabel = modelError ? t.header.error : modelLoaded ? t.header.ready : t.header.notReady;
 
   return (
-    <aside className="w-16 lg:w-60 shrink-0 bg-sidebar flex flex-col transition-all">
+    <aside className="hidden sm:flex sm:w-16 lg:w-60 shrink-0 bg-sidebar flex-col transition-all">
       {/* Brand */}
       <div className="flex items-center gap-3 px-3 lg:px-5 py-5">
         <div className="h-10 w-10 shrink-0 rounded-lg bg-white flex items-center justify-center shadow-sm">

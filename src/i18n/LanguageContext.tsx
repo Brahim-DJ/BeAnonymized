@@ -14,7 +14,7 @@ function detectLanguage(): string {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored && languages.some((l) => l.code === stored)) return stored;
 
-  return 'ar';
+  return 'fr';
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
