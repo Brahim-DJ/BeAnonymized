@@ -2,6 +2,7 @@ import { useRef, useCallback, useState } from 'react';
 import type { DetectedEntity, EntityType } from '../../core/types.ts';
 import { ENTITY_COLORS } from '../../core/types.ts';
 import { EntityTypePicker } from './EntityTypePicker.tsx';
+import { EntityMark } from './EntityHighlight.tsx';
 import { Button } from '@/components/ui/button';
 import { X, Upload, FileText } from 'lucide-react';
 import { useTranslation } from '../../i18n/LanguageContext.tsx';
@@ -90,7 +91,6 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, [processFile]);
 
-  // Drag and drop handlers
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -183,12 +183,15 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
       onDrop={onLoadDocx ? handleDrop : undefined}
     >
       {/* Header bar */}
-      <div className="flex items-center justify-between h-11 relative border-b border-[#D4D4D0] px-4 bg-[#F7F7F7]">
-        <h3 className="font-display text-sm text-[#0E131B] font-medium">
-          {t.textInput.title}
-        </h3>
+      <div className="flex items-center justify-between h-12 relative border-b border-border px-4 bg-background/60">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary">1</span>
+          <h3 className="font-display text-sm text-foreground font-semibold">
+            {t.textInput.title}
+          </h3>
+        </div>
         {value && (
-          <Button variant="ghost" size="sm" onClick={docxFileName ? onRemoveDocx : onClear} className="gap-1.5 h-7 text-[#52617A] hover:bg-[#E8E8E5] hover:text-[#0E131B]">
+          <Button variant="ghost" size="sm" onClick={docxFileName ? onRemoveDocx : onClear} className="gap-1.5 h-7 text-muted hover:bg-secondary hover:text-foreground">
             <X className="w-3 h-3" />
             {t.textInput.clear}
           </Button>
@@ -206,11 +209,11 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
       <div className="min-h-[200px] relative flex-1">
         {/* Drag overlay */}
         {isDragging && (
-          <div className="absolute inset-0 z-20 bg-[#F7F7F7]/95 border border-dashed border-[#52617A] flex flex-col items-center justify-center gap-3 pointer-events-none">
-            <div className="w-12 h-12 border border-[#52617A] flex items-center justify-center">
-              <Upload className="w-6 h-6 text-[#0E131B]" />
+          <div className="absolute inset-0 z-20 bg-background/95 border border-dashed border-muted flex flex-col items-center justify-center gap-3 pointer-events-none">
+            <div className="w-12 h-12 border border-muted flex items-center justify-center rounded-md">
+              <Upload className="w-6 h-6 text-foreground" />
             </div>
-            <p className="text-sm font-medium text-[#0E131B]">{t.textInput.dragging}</p>
+            <p className="text-sm font-medium text-foreground">{t.textInput.dragging}</p>
           </div>
         )}
 
@@ -230,8 +233,9 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
                   (e) => e.start === span.entity!.start && e.end === span.entity!.end
                 );
                 return (
-                  <mark
+                  <EntityMark
                     key={i}
+                    color={ENTITY_COLORS[span.entity.type]}
                     data-start={span.start}
                     data-end={span.end}
                     className="entity-highlight-animate"
@@ -242,16 +246,10 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
                       }
                     }}
                     title="Click to remove"
-                    style={{
-                      backgroundColor: ENTITY_COLORS[span.entity.type] + '30',
-                      borderBottom: `2px solid ${ENTITY_COLORS[span.entity.type]}`,
-                      color: ENTITY_COLORS[span.entity.type],
-                      padding: '1px 3px',
-                      cursor: 'pointer',
-                    }}
+                    style={{ cursor: 'pointer' }}
                   >
                     {span.text}
-                  </mark>
+                  </EntityMark>
                 );
               }
               return (
@@ -265,17 +263,17 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
           /* Loaded file — read-only text preview */
           <div className="p-4 text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground font-light overflow-auto max-h-[60vh]">
             {/* File loaded banner */}
-            <div className="flex items-center gap-3 mb-4 px-3 py-2.5 bg-[#223159]/5 border border-[#D4D4D0]">
-              <div className="w-8 h-8 bg-[#223159] flex items-center justify-center flex-shrink-0">
-                <FileText className="w-4 h-4 text-[#FAFAFA]" />
+            <div className="flex items-center gap-3 mb-4 px-3 py-2.5 bg-primary/5 border border-border rounded-md">
+              <div className="w-8 h-8 bg-primary flex items-center justify-center flex-shrink-0 rounded-md">
+                <FileText className="w-4 h-4 text-primary-foreground" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-medium text-[#0E131B] truncate">{docxFileName}</p>
+                <p className="text-xs font-medium text-foreground truncate">{docxFileName}</p>
                 <p className="text-[10px] text-muted-foreground">{t.textInput.wordCount(wordCount)}</p>
               </div>
               <button
                 onClick={onRemoveDocx}
-                className="text-muted-foreground hover:text-[#DC2626] transition-colors cursor-pointer flex-shrink-0"
+                className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer flex-shrink-0"
                 title={t.textInput.removeFile}
               >
                 <X className="w-4 h-4" />
@@ -284,34 +282,34 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
             {value}
           </div>
         ) : (
-          /* Editable text area — same element whether empty or not */
+          /* Editable text area */
           <div className="flex flex-col">
             <textarea
               ref={textareaRef}
               value={value}
               onChange={(e) => onChange(e.target.value)}
               placeholder={t.textInput.placeholder}
-              className={`w-full bg-transparent p-4 text-[#0E131B] placeholder:text-[#52617A] resize-none focus:outline-none text-sm leading-relaxed ${showEmptyState ? 'min-h-[140px]' : 'min-h-[200px]'}`}
+              className={`w-full bg-transparent p-4 text-foreground placeholder:text-muted resize-none focus:outline-none text-sm leading-relaxed ${showEmptyState ? 'min-h-[140px]' : 'min-h-[200px]'}`}
               style={{ fieldSizing: 'content' } as React.CSSProperties}
             />
             {/* Upload section — only visible when empty */}
             {(showEmptyState && onLoadDocx) && (
               <>
                 <div className="flex items-center gap-3 px-4">
-                  <div className="flex-1 border-t border-[#D4D4D0]" />
+                  <div className="flex-1 border-t border-border" />
                   <span className="text-[10px] text-muted-foreground/60 uppercase tracking-widest font-medium">{t.textInput.dropzoneOr}</span>
-                  <div className="flex-1 border-t border-[#D4D4D0]" />
+                  <div className="flex-1 border-t border-border" />
                 </div>
                 <div className="px-4 py-3 space-y-3">
                   <button
                     onClick={() => fileInputRef.current?.click()}
-                    className="w-full flex items-center gap-4 p-4 border border-dashed border-[#D4D4D0] hover:border-[#223159]/40 transition-all cursor-pointer group"
+                    className="w-full flex items-center gap-4 p-4 border border-dashed border-border hover:border-primary/40 transition-all cursor-pointer group rounded-md"
                   >
-                    <div className="w-10 h-10 bg-[#223159]/5 group-hover:bg-[#223159] flex items-center justify-center flex-shrink-0 transition-colors">
-                      <FileText className="w-5 h-5 text-muted-foreground group-hover:text-[#FAFAFA] transition-colors" />
+                    <div className="w-10 h-10 bg-primary/5 group-hover:bg-primary flex items-center justify-center flex-shrink-0 transition-colors rounded-md">
+                      <FileText className="w-5 h-5 text-muted-foreground group-hover:text-primary-foreground transition-colors" />
                     </div>
                     <div className="text-left">
-                      <p className="text-xs font-medium text-[#0E131B]">
+                      <p className="text-xs font-medium text-foreground">
                         {t.textInput.uploadDocx}
                       </p>
                       <p className="text-[10px] text-muted-foreground mt-0.5">
@@ -327,13 +325,13 @@ export function TextInput({ value, onChange, onClear, entities, onAddEntity, onR
       </div>
 
       {/* Footer bar */}
-      <div className="border-t border-[#D4D4D0] px-4 py-2 bg-[#F7F7F7] flex items-center justify-between">
+      <div className="border-t border-border px-4 py-2 bg-background flex items-center justify-between">
         <p className="label-meta text-muted-foreground">
           {value ? t.textInput.wordCount(wordCount) : '\u00A0'}
         </p>
         <div className="flex items-center gap-3">
           {value && !hasEntities && (
-            <p className="label-meta text-[#2D6A4F]/70">{t.textInput.readyToRedact}</p>
+            <p className="label-meta text-success/70">{t.textInput.readyToRedact}</p>
           )}
           {hasEntities && (
             <p className="label-meta text-muted-foreground/60">{t.textInput.selectToTag}</p>

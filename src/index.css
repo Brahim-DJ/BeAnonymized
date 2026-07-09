@@ -2,8 +2,6 @@
 
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
-
 /* Self-hosted fonts (no external requests, CSP-compliant) */
 @font-face {
   font-family: 'Space Grotesk';
@@ -26,52 +24,84 @@
   font-display: swap;
   src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
 }
+@font-face {
+  font-family: 'Noto Sans Arabic';
+  font-style: normal;
+  font-weight: 400 500;
+  font-display: swap;
+  src: url('/fonts/noto-sans-arabic-400.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Sans Arabic';
+  font-style: normal;
+  font-weight: 600 800;
+  font-display: swap;
+  src: url('/fonts/noto-sans-arabic-600.woff2') format('woff2');
+}
 
 @theme inline {
-  --font-sans: 'Inter', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
-  --font-serif: 'Space Grotesk', 'Inter', sans-serif;
-  --font-body: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+  --font-sans: 'Inter', 'Noto Sans Arabic', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Space Grotesk', 'Noto Sans Arabic', 'Inter', sans-serif;
+  --font-body: 'Inter', 'Noto Sans Arabic', 'Helvetica Neue', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', 'Courier New', monospace;
-  --font-display: 'Space Grotesk', 'Inter', sans-serif;
+  --font-display: 'Space Grotesk', 'Noto Sans Arabic', 'Inter', sans-serif;
 
-  --color-background: #F7F7F7;
-  --color-foreground: #0E131B;
+  --color-background: #EDF0F5;
+  --color-foreground: #111827;
 
   --color-card: #FFFFFF;
-  --color-card-foreground: #0E131B;
+  --color-card-foreground: #111827;
 
   --color-popover: #FFFFFF;
-  --color-popover-foreground: #0E131B;
+  --color-popover-foreground: #111827;
 
-  --color-primary: #223159;
+  --color-primary: #213F7A;
   --color-primary-foreground: #FAFAFA;
 
-  --color-secondary: #E8E8E5;
-  --color-secondary-foreground: #0E131B;
+  --color-secondary: #E8E9ED;
+  --color-secondary-foreground: #111827;
 
-  --color-muted: #52617A;
-  --color-muted-foreground: #8A94A6;
+  --color-muted: #6B7280;
+  --color-muted-foreground: #9CA3AF;
 
-  --color-accent: #AFD135;
-  --color-accent-foreground: #0E131B;
+  --color-accent: #AFD136;
+  --color-accent-foreground: #111827;
 
   --color-destructive: #DC2626;
   --color-destructive-foreground: #FAFAFA;
 
   --color-success: #2D6A4F;
   --color-warning: #B8860B;
-  --color-info: #223159;
+  --color-info: #213F7A;
 
-  --color-border: #D4D4D0;
-  --color-input: #D4D4D0;
-  --color-ring: #223159;
+  --color-border: #E2E4E8;
+  --color-input: #E2E4E8;
+  --color-ring: #213F7A;
 
-  --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
+  --color-sidebar: #16294F;
+  --color-sidebar-hover: #1E3563;
 
-  --animate-accordion-down: accordion-down 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  --animate-accordion-up: accordion-up 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-xl: 16px;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+
+  --shadow-xs: 0 1px 2px 0 rgb(33 63 122 / 0.04);
+  --shadow-sm: 0 1px 3px 0 rgb(33 63 122 / 0.06), 0 1px 2px -1px rgb(33 63 122 / 0.06);
+  --shadow-md: 0 4px 12px -2px rgb(33 63 122 / 0.08), 0 2px 4px -2px rgb(33 63 122 / 0.05);
+  --shadow-lg: 0 12px 24px -4px rgb(33 63 122 / 0.1), 0 4px 8px -4px rgb(33 63 122 / 0.06);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
 }
 
 @layer base {
@@ -80,16 +110,15 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', 'Helvetica Neue', system-ui, sans-serif;
+    font-family: 'Inter', 'Noto Sans Arabic', 'Helvetica Neue', system-ui, sans-serif;
     font-weight: 400;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 }
 
-/* Metadata label utility */
 .label-meta {
-  font-family: 'Inter', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Inter', 'Noto Sans Arabic', 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.12em;
@@ -107,19 +136,10 @@
   }
 }
 
-@keyframes accordion-down {
-  from { height: 0; }
-  to { height: var(--radix-accordion-content-height); }
-}
-@keyframes accordion-up {
-  from { height: var(--radix-accordion-content-height); }
-  to { height: 0; }
-}
-
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -130,13 +150,12 @@
   animation: toast-in 0.2s ease-out;
 }
 
-/* Skeleton shimmer for loading state */
 @keyframes skeleton-shimmer {
   0% { background-position: -200px 0; }
   100% { background-position: calc(200px + 100%) 0; }
 }
 .skeleton-line {
-  background: linear-gradient(90deg, #E8E8E5 25%, #F0F0EE 50%, #E8E8E5 75%);
+  background: linear-gradient(90deg, #E8E9ED 25%, #F0F1F3 50%, #E8E9ED 75%);
   background-size: 200px 100%;
   animation: skeleton-shimmer 1.5s infinite;
 }

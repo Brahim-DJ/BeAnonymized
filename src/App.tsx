@@ -3,14 +3,11 @@ import { SpreadsheetPage } from './ui/components/SpreadsheetPage.tsx';
 import { DocumentPage } from './ui/components/DocumentPage.tsx';
 import { useAnonymizer } from './ui/hooks/useAnonymizer.ts';
 import { useTranslation } from './i18n/LanguageContext.tsx';
-import { languages } from './i18n/translations/index.ts';
-import { Button } from '@/components/ui/button';
-import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover';
-import { Languages, Check } from 'lucide-react';
 import { useToast } from './ui/components/Toast.tsx';
+import { Sidebar, type AppTab } from './ui/components/Sidebar.tsx';
 
 export default function App() {
-  const { t, language, setLanguage } = useTranslation();
+  const { t } = useTranslation();
   const { showToast } = useToast();
 
   const {
@@ -28,7 +25,7 @@ export default function App() {
     loadDocxFile, exportDocx, removeDocxFile,
   } = useAnonymizer();
 
-  const [activeTab, setActiveTab] = useState<'documents' | 'spreadsheets'>('spreadsheets');
+  const [activeTab, setActiveTab] = useState<AppTab>('spreadsheets');
   const [downloading, setDownloading] = useState(false);
   const clearSnapshotRef = useRef<{ text: string; anonymized: string; entities: typeof entities; entries: typeof entries } | null>(null);
 
@@ -49,7 +46,7 @@ export default function App() {
       URL.revokeObjectURL(url);
       showToast(t.textOutput.downloaded);
     } catch (err) {
-      console.error('[Be Anonymized] Export failed:', err);
+      console.error('[Confidia] Export failed:', err);
       showToast(t.textOutput.exportFailed ?? 'Export failed.');
     } finally {
       setDownloading(false);
@@ -88,62 +85,22 @@ export default function App() {
   }, [inputText, anonymizedText, entities, entries, clear, handleInputChange, showToast, t]);
 
   return (
-    <div className="h-screen flex flex-col bg-background text-foreground">
-      {/* Header */}
-      <header className="px-6 py-2 border-b border-[#E8E8E5] bg-[#F7F7F7]/85 shrink-0">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <span className="font-display text-lg tracking-tight text-[#223159] font-medium">Be Anonymized</span>
-          <div className="flex items-center gap-4">
-            {/* Language switcher */}
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7">
-                  <Languages className="w-3.5 h-3.5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-48 p-1">
-                {languages.filter(l => l.code === 'en' || l.code === 'fr' || l.code === 'ar').map((lang) => (
-                  <button
-                    key={lang.code}
-                    onClick={() => setLanguage(lang.code)}
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-[#E8E8E5] transition-colors duration-200 flex items-center justify-between cursor-pointer"
-                  >
-                    <span className="text-[#0E131B]/80">{lang.nativeName}</span>
-                    {language === lang.code && <Check className="w-3.5 h-3.5 text-[#223159]" />}
-                  </button>
-                ))}
-              </PopoverContent>
-            </Popover>
+    <div className="h-screen flex bg-background text-foreground overflow-hidden">
+      {/* App sidebar */}
+      <Sidebar
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        modelLoaded={modelLoaded}
+        modelLoading={modelLoading}
+        modelError={Boolean(modelError)}
+      />
 
-            {/* Nav */}
-            <nav className="flex items-center gap-1">
-              <button
-                onClick={() => setActiveTab('spreadsheets')}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer rounded-md ${
-                  activeTab === 'spreadsheets' ? 'bg-[#223159] text-white' : 'text-[#52617A] hover:text-[#223159]'
-                }`}
-              >
-                {t.nav.spreadsheets}
-              </button>
-              <button
-                onClick={() => setActiveTab('documents')}
-                className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer rounded-md ${
-                  activeTab === 'documents' ? 'bg-[#223159] text-white' : 'text-[#52617A] hover:text-[#223159]'
-                }`}
-              >
-                {t.nav.documents}
-              </button>
-            </nav>
-          </div>
-        </div>
-      </header>
-
-      {/* Main content */}
-      <main className="flex-1 flex flex-col max-w-6xl w-full mx-auto px-6 pt-4 pb-4 overflow-hidden">
-        <div className={`flex-1 min-h-0 ${activeTab === 'spreadsheets' ? '' : 'hidden'}`}>
+      {/* Content column */}
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className={`flex-1 min-h-0 flex flex-col max-w-5xl w-full mx-auto px-6 lg:px-8 pt-6 pb-4 ${activeTab === 'spreadsheets' ? '' : 'hidden'}`}>
           <SpreadsheetPage />
         </div>
-        <div className={`flex-1 min-h-0 ${activeTab === 'documents' ? '' : 'hidden'}`}>
+        <div className={`flex-1 min-h-0 flex flex-col max-w-5xl w-full mx-auto px-6 lg:px-8 pt-6 pb-4 ${activeTab === 'documents' ? '' : 'hidden'}`}>
           <DocumentPage
             inputText={inputText}
             anonymizedText={anonymizedText}
@@ -188,7 +145,6 @@ export default function App() {
           />
         </div>
       </main>
-
     </div>
   );
 }

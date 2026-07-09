@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { Translations } from './types.ts';
 import { getLanguage, languages } from './translations/index.ts';
 
@@ -8,16 +8,13 @@ interface LanguageContextValue {
   setLanguage: (code: string) => void;
 }
 
-const STORAGE_KEY = 'be-anonymized-lang';
+const STORAGE_KEY = 'confidia-lang';
 
 function detectLanguage(): string {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored && languages.some((l) => l.code === stored)) return stored;
 
-  const browserLang = navigator.language.slice(0, 2);
-  if (languages.some((l) => l.code === browserLang)) return browserLang;
-
-  return 'en';
+  return 'ar';
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -29,6 +26,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setLanguageState(code);
     localStorage.setItem(STORAGE_KEY, code);
   };
+
+  useEffect(() => {
+    document.documentElement.dir = language === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = language;
+  }, [language]);
 
   const t = getLanguage(language).translations;
 

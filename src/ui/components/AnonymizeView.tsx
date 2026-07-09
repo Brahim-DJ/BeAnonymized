@@ -12,6 +12,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FileSpreadsheet, X, Upload, Download } from 'lucide-react';
 import { useToast } from './Toast.tsx';
 import { useTranslation } from '../../i18n/LanguageContext.tsx';
@@ -91,7 +93,7 @@ export function AnonymizeView({ sessionRef }: Props) {
       sessionRef.current.clear();
     } catch (err) {
       showToast(t.spreadsheet.failedToRead);
-      console.error('[Be Anonymized] Failed to read xlsx:', err);
+      console.error('[Confidia] Failed to read xlsx:', err);
     }
   }, [t, showToast, sessionRef]);
 
@@ -181,7 +183,7 @@ export function AnonymizeView({ sessionRef }: Props) {
       URL.revokeObjectURL(url);
       showToast(t.spreadsheet.downloaded);
     } catch (err) {
-      console.error('[Be Anonymized] Export failed:', err);
+      console.error('[Confidia] Export failed:', err);
       showToast(t.spreadsheet.exportFailed);
     } finally {
       setDownloading(false);
@@ -198,22 +200,29 @@ export function AnonymizeView({ sessionRef }: Props) {
   if (!extraction) {
     return (
       <div
-        className="flex flex-col items-center justify-center py-24 px-6 min-h-full"
+        className="flex flex-col items-center justify-center px-6 py-10 min-h-full"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
       >
         <input ref={fileInputRef} type="file" accept=".xlsx" onChange={handleFileInput} className="hidden" />
-        <div className="w-14 h-14 bg-[#F7F7F7] border border-[#D4D4D0] flex items-center justify-center mb-5">
-          <FileSpreadsheet className="w-7 h-7 text-[#52617A]" />
-        </div>
-        <p className="font-display text-lg font-bold text-[#0E131B] mb-2 uppercase tracking-tight">{t.spreadsheet.uploadHeading}</p>
-        <p className="text-sm text-muted-foreground mb-6">{t.spreadsheet.uploadSubtitle}</p>
         <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex items-center gap-2 px-6 py-3 bg-[#223159] text-[#FAFAFA] hover:bg-[#1A2648] transition-colors cursor-pointer text-sm font-medium"
+          className="group w-full max-w-md flex flex-col items-center gap-0 border-2 border-dashed border-border hover:border-primary/50 bg-background/40 hover:bg-primary/[0.03] transition-all cursor-pointer rounded-lg px-8 py-14"
         >
-          <Upload className="w-4 h-4" />
-          {t.spreadsheet.uploadButton}
+          <div className="relative mb-5">
+            <div className="w-16 h-16 bg-primary/5 group-hover:bg-primary/10 border border-primary/15 flex items-center justify-center rounded-xl transition-colors">
+              <FileSpreadsheet className="w-8 h-8 text-primary" />
+            </div>
+            <div className="absolute -bottom-1.5 -end-1.5 w-6 h-6 bg-accent flex items-center justify-center rounded-full shadow-sm">
+              <Upload className="w-3.5 h-3.5 text-primary" />
+            </div>
+          </div>
+          <p className="font-display text-base font-bold text-foreground mb-1.5 uppercase tracking-tight">{t.spreadsheet.uploadHeading}</p>
+          <p className="text-sm text-muted-foreground mb-7">{t.spreadsheet.uploadSubtitle}</p>
+          <span className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground group-hover:bg-primary/90 transition-colors text-sm font-medium rounded-md shadow-sm">
+            <Upload className="w-4 h-4" />
+            {t.spreadsheet.uploadButton}
+          </span>
         </button>
       </div>
     );
@@ -226,36 +235,25 @@ export function AnonymizeView({ sessionRef }: Props) {
       <input ref={fileInputRef} type="file" accept=".xlsx" onChange={handleFileInput} className="hidden" />
 
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#D4D4D0] bg-[#F7F7F7] shrink-0">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-background/60 shrink-0">
         <div className="flex items-center gap-2">
-          <button
-            onClick={anonymize}
-            disabled={selectedCount === 0 || anonymizeDone}
-            className="px-4 py-1.5 bg-[#223159] text-[#FAFAFA] hover:bg-[#1A2648] transition-colors disabled:bg-[#223159]/55 disabled:cursor-not-allowed cursor-pointer text-xs font-medium"
-          >
+          <Button size="sm" variant="accent" onClick={anonymize} disabled={selectedCount === 0 || anonymizeDone}>
             {t.spreadsheet.anonymizeSelected}
-          </button>
+          </Button>
           {anonymizeDone && entries.length > 0 && (
-            <button
-              onClick={handleDownload}
-              disabled={downloading}
-              className="flex items-center gap-1.5 px-3 py-1.5 border border-[#D4D4D0] bg-[#FFFFFF] text-[#0E131B] hover:bg-[#223159] hover:text-[#FAFAFA] transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed text-xs font-medium"
-            >
+            <Button size="sm" variant="outline" onClick={handleDownload} disabled={downloading}>
               <Download className="w-3 h-3" />
               {t.spreadsheet.downloadRedacted}
-            </button>
+            </Button>
           )}
         </div>
         <div className="flex items-center gap-2">
           {anonymizeDone && (
-            <p className="text-[10px] text-muted-foreground mr-2">{t.spreadsheet.entriesRedacted(entries.length)}</p>
+            <p className="text-[10px] text-muted-foreground me-2">{t.spreadsheet.entriesRedacted(entries.length)}</p>
           )}
-          <button
-            onClick={clear}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-[#52617A] hover:text-[#DC2626] transition-colors cursor-pointer font-medium"
-          >
+          <Button size="sm" variant="ghost" onClick={clear} className="text-muted hover:text-destructive">
             <X className="w-3 h-3" /> {t.spreadsheet.clear}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -263,18 +261,18 @@ export function AnonymizeView({ sessionRef }: Props) {
       <div className="flex-1 overflow-auto p-4 min-h-0">
         {/* Column selection bar */}
         <div className="flex items-center justify-between mb-3">
-          <p className="text-xs font-medium text-[#0E131B]">
+          <p className="text-xs font-medium text-foreground">
             {anonymizeDone ? t.spreadsheet.redactedValues : t.spreadsheet.selectColumns}
           </p>
           {!anonymizeDone && (
             <div className="flex items-center gap-2">
-              <button onClick={selectAllColumns} className="text-[10px] text-[#52617A] hover:text-[#0E131B] cursor-pointer underline">{t.spreadsheet.selectAll}</button>
-              <button onClick={deselectAllColumns} className="text-[10px] text-[#52617A] hover:text-[#0E131B] cursor-pointer underline">{t.spreadsheet.deselectAll}</button>
+              <button onClick={selectAllColumns} className="text-[10px] text-muted hover:text-foreground cursor-pointer underline">{t.spreadsheet.selectAll}</button>
+              <button onClick={deselectAllColumns} className="text-[10px] text-muted hover:text-foreground cursor-pointer underline">{t.spreadsheet.deselectAll}</button>
             </div>
           )}
         </div>
 
-        <div className="border border-[#D4D4D0]">
+        <div className="border border-border rounded-xl overflow-hidden shadow-xs">
           <Table>
             <TableHeader>
               <TableRow>
@@ -317,28 +315,20 @@ export function AnonymizeView({ sessionRef }: Props) {
       </div>
 
       {/* Footer */}
-      <div className="border-t border-[#D4D4D0] px-4 py-2 bg-[#F7F7F7] shrink-0 flex items-center justify-between">
+      <div className="border-t border-border px-4 py-2 bg-background shrink-0 flex items-center justify-between">
         <p className="label-meta text-muted-foreground">{t.spreadsheet.rowColCount(activeSheet.rows.length, columnCount)}</p>
         <p className="label-meta text-muted-foreground">{xlsxFileName}</p>
       </div>
 
       {/* Sheet tabs at bottom (Excel-like) */}
       {extraction.sheets.length > 1 && (
-        <div className="flex border-t border-[#D4D4D0] bg-[#F7F7F7] shrink-0">
-          {extraction.sheets.map((sheet, si) => (
-            <button
-              key={si}
-              onClick={() => setActiveSheetIndex(si)}
-              className={`px-4 py-2 text-xs font-medium border-t-2 transition-colors cursor-pointer ${
-                si === activeSheetIndex
-                  ? 'border-[#223159] text-[#0E131B] bg-white rounded-t-sm'
-                  : 'border-transparent text-[#52617A] hover:text-[#0E131B]'
-              }`}
-            >
-              {sheet.name}
-            </button>
-          ))}
-        </div>
+        <Tabs value={String(activeSheetIndex)} onValueChange={(value) => setActiveSheetIndex(Number(value))} className="shrink-0">
+          <TabsList variant="underline-top">
+            {extraction.sheets.map((sheet, si) => (
+              <TabsTrigger key={si} value={String(si)} variant="underline-top">{sheet.name}</TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       )}
     </div>
   );

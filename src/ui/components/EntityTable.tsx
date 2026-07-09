@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import type { DetectedEntity, ReplacementEntry } from '../../core/types.ts';
-import { ENTITY_COLORS } from '../../core/types.ts';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ChevronDown } from 'lucide-react';
+import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
+import { EntityBadge } from './EntityHighlight.tsx';
+import { ConfidenceBar } from './ConfidenceBar.tsx';
 import { useTranslation } from '../../i18n/LanguageContext.tsx';
 
 interface EntityTableProps {
@@ -21,7 +22,6 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
   const [expanded, setExpanded] = useState(false);
   const prevEntityCount = useRef(0);
 
-  // Auto-expand when entities first appear (after redaction), reset when cleared
   useEffect(() => {
     if (entities.length > 0 && prevEntityCount.current === 0) {
       setExpanded(true);
@@ -65,7 +65,7 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
               if (e.key === 'Enter') commitEdit();
               if (e.key === 'Escape') setEditingOriginal(null);
             }}
-            className="bg-[#E8E8E5] border border-[#223159] px-1.5 py-0.5 text-xs font-mono text-[#0E131B] focus:outline-none focus:ring-1 focus:ring-[#223159]"
+            className="bg-secondary border border-primary px-1.5 py-0.5 text-xs font-mono text-foreground focus:outline-none focus:ring-1 focus:ring-primary rounded-sm"
             style={{ width: `${Math.max(editValue.length + 1, 5)}ch` }}
           />
           <span className="text-muted-foreground/50">&gt;&gt;</span>
@@ -75,7 +75,7 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
     return (
       <span
         onClick={() => startEditing(entity.value, label)}
-        className="cursor-pointer hover:text-[#DC2626] transition-colors"
+        className="cursor-pointer hover:text-destructive transition-colors"
         title={t.entityTable.clickToRename}
       >
         {label}
@@ -86,37 +86,32 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
   if (entities.length === 0) return null;
 
   return (
-    <div className="mb-6">
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-between px-4 py-3 bg-[#223159] text-[#FAFAFA] cursor-pointer hover:bg-[#1A2648] transition-colors duration-150"
-      >
-        <div>
-          <h3 className="label-meta text-[#FAFAFA] tracking-[0.15em]">
+    <Accordion
+      type="single"
+      collapsible
+      value={expanded ? 'entities' : ''}
+      onValueChange={(value) => setExpanded(value === 'entities')}
+      className="mb-5"
+    >
+      <AccordionItem value="entities">
+        <AccordionTrigger>
+          <h3 className="text-sm font-semibold text-foreground">
             {t.entityTable.title(entities.length)}
           </h3>
-        </div>
-        <ChevronDown
-          className={`w-4 h-4 text-[#FAFAFA] transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`}
-        />
-      </button>
-      <div
-        className="grid transition-all duration-300 ease-in-out"
-        style={{ gridTemplateRows: expanded ? '1fr' : '0fr' }}
-      >
-        <div className="overflow-hidden">
-      <Card className="overflow-hidden border-t-0 mt-0">
-        <div className="px-4 py-2.5 bg-[#E8E8E5]/20 border-b border-[#D4D4D0]">
+        </AccordionTrigger>
+        <AccordionContent>
+      <Card className="overflow-hidden border-t-0 mt-0 rounded-b-xl rounded-t-none shadow-none">
+        <div className="px-4 py-2.5 bg-secondary/20 border-b border-border">
           <p className="text-[11px] text-muted-foreground leading-relaxed">{t.entityTable.subtitle}</p>
         </div>
         {/* Desktop table */}
         <table className="w-full text-sm hidden md:table">
           <thead>
-            <tr className="border-b border-[#D4D4D0] bg-[#E8E8E5]/30">
-              <th className="text-left p-3 label-meta text-muted-foreground">{t.entityTable.type}</th>
-              <th className="text-left p-3 label-meta text-muted-foreground">{t.entityTable.label}</th>
-              <th className="text-left p-3 label-meta text-muted-foreground">{t.entityTable.originalValue}</th>
-              <th className="text-left p-3 label-meta text-muted-foreground">{t.entityTable.confidence}</th>
+            <tr className="border-b border-border bg-secondary/30">
+              <th className="text-start p-3 label-meta text-muted-foreground">{t.entityTable.type}</th>
+              <th className="text-start p-3 label-meta text-muted-foreground">{t.entityTable.label}</th>
+              <th className="text-start p-3 label-meta text-muted-foreground">{t.entityTable.originalValue}</th>
+              <th className="text-start p-3 label-meta text-muted-foreground">{t.entityTable.confidence}</th>
               <th className="text-center p-3 label-meta text-muted-foreground">{t.entityTable.include}</th>
             </tr>
           </thead>
@@ -126,41 +121,19 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
               return (
                 <tr
                   key={`${entity.start}-${entity.value}`}
-                  className={`border-b border-[#D4D4D0] last:border-0 hover:bg-[#E8E8E5]/20 transition-colors ${
+                  className={`border-b border-border last:border-0 hover:bg-secondary/20 transition-colors ${
                     excluded ? 'opacity-40' : ''
                   }`}
                 >
                   <td className="p-3">
-                    <span
-                      className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium"
-                      style={{
-                        backgroundColor: ENTITY_COLORS[entity.type] + '25',
-                        color: ENTITY_COLORS[entity.type],
-                      }}
-                    >
-                      <span
-                        className="w-2 h-2"
-                        style={{ backgroundColor: ENTITY_COLORS[entity.type] }}
-                      />
-                      {t.entityLabels[entity.type]}
-                    </span>
+                    <EntityBadge type={entity.type} label={t.entityLabels[entity.type]} />
                   </td>
                   <td className="p-3 text-muted-foreground text-xs font-mono">
                     {renderLabel(entity)}
                   </td>
                   <td className="p-3 text-foreground font-mono text-xs">{entity.value}</td>
                   <td className="p-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-14 bg-[#E8E8E5] h-1.5 overflow-hidden">
-                        <div
-                          className={`h-full transition-all ${
-                            entity.confidence > 0.8 ? 'bg-[#2D6A4F]' : entity.confidence > 0.5 ? 'bg-[#B8860B]' : 'bg-[#DC2626]'
-                          }`}
-                          style={{ width: `${Math.round(entity.confidence * 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground tabular-nums">{Math.round(entity.confidence * 100)}%</span>
-                    </div>
+                    <ConfidenceBar confidence={entity.confidence} size="sm" />
                   </td>
                   <td className="p-3 text-center">
                     <Checkbox
@@ -176,7 +149,7 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
         </table>
 
         {/* Mobile card layout */}
-        <div className="md:hidden divide-y divide-[#D4D4D0]">
+        <div className="md:hidden divide-y divide-border">
           {entities.map((entity, index) => {
             const excluded = excludedIndices.has(index);
             return (
@@ -185,16 +158,7 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
                 className={`p-3 space-y-2 ${excluded ? 'opacity-40' : ''}`}
               >
                 <div className="flex items-center justify-between">
-                  <span
-                    className="inline-flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium"
-                    style={{
-                      backgroundColor: ENTITY_COLORS[entity.type] + '25',
-                      color: ENTITY_COLORS[entity.type],
-                    }}
-                  >
-                    <span className="w-2 h-2" style={{ backgroundColor: ENTITY_COLORS[entity.type] }} />
-                    {t.entityLabels[entity.type]}
-                  </span>
+                  <EntityBadge type={entity.type} label={t.entityLabels[entity.type]} />
                   <Checkbox
                     checked={!excluded}
                     onCheckedChange={() => onToggle(index)}
@@ -204,25 +168,15 @@ export function EntityTable({ entities, entries, excludedIndices, onToggle, onRe
                 <div className="text-xs font-mono text-foreground truncate">{entity.value}</div>
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-muted-foreground">{renderLabel(entity)}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 bg-[#E8E8E5] h-1.5 overflow-hidden">
-                      <div
-                        className={`h-full ${
-                          entity.confidence > 0.8 ? 'bg-[#2D6A4F]' : entity.confidence > 0.5 ? 'bg-[#B8860B]' : 'bg-[#DC2626]'
-                        }`}
-                        style={{ width: `${Math.round(entity.confidence * 100)}%` }}
-                      />
-                    </div>
-                    <span className="text-[10px] text-muted-foreground tabular-nums">{Math.round(entity.confidence * 100)}%</span>
-                  </div>
+                  <ConfidenceBar confidence={entity.confidence} size="xs" />
                 </div>
               </div>
             );
           })}
         </div>
       </Card>
-        </div>
-      </div>
-    </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   );
 }

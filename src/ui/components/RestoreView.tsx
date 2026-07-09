@@ -4,6 +4,9 @@ import { AnonymizationSession } from '../../core/session.ts';
 import { FileSpreadsheet, X, Upload, Download, Copy } from 'lucide-react';
 import { useToast } from './Toast.tsx';
 import { useTranslation } from '../../i18n/LanguageContext.tsx';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Props {
   sessionRef: React.MutableRefObject<AnonymizationSession>;
@@ -64,7 +67,7 @@ export function RestoreView({ sessionRef }: Props) {
       setRedactedFile(file);
       setRestoredBlob(blob);
     } catch (err) {
-      console.error('[Be Anonymized] Failed to restore xlsx:', err);
+      console.error('[Confidia] Failed to restore xlsx:', err);
       showToast(t.spreadsheet.failedToRestore);
     } finally {
       setRestoring(false);
@@ -89,57 +92,38 @@ export function RestoreView({ sessionRef }: Props) {
   return (
     <div className="flex flex-col h-full">
       {/* Sub-tab bar */}
-      <div className="flex border-b border-[#D4D4D0] bg-[#F7F7F7] shrink-0">
-        <button
-          onClick={() => setSubTab('paste')}
-          className={`px-5 py-2.5 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
-            subTab === 'paste' ? 'border-[#223159] text-[#0E131B] bg-white' : 'border-transparent text-[#52617A] hover:text-[#0E131B]'
-          }`}
-        >
-          {t.spreadsheet.pasteSubTab}
-        </button>
-        <button
-          onClick={() => setSubTab('upload')}
-          className={`px-5 py-2.5 text-xs font-medium border-b-2 transition-colors cursor-pointer ${
-            subTab === 'upload' ? 'border-[#223159] text-[#0E131B] bg-white' : 'border-transparent text-[#52617A] hover:text-[#0E131B]'
-          }`}
-        >
-          {t.spreadsheet.uploadSubTab}
-        </button>
-      </div>
+      <Tabs value={subTab} onValueChange={(value) => setSubTab(value as 'paste' | 'upload')} className="shrink-0">
+        <TabsList variant="underline">
+          <TabsTrigger value="paste" variant="underline">{t.spreadsheet.pasteSubTab}</TabsTrigger>
+          <TabsTrigger value="upload" variant="underline">{t.spreadsheet.uploadSubTab}</TabsTrigger>
+        </TabsList>
+      </Tabs>
 
       {/* Content */}
       <div className="flex-1 overflow-auto p-6">
         {subTab === 'paste' ? (
           <div className="max-w-2xl mx-auto">
-            <p className="text-xs font-medium text-[#0E131B] mb-3">{t.spreadsheet.pasteDescription}</p>
-            <textarea
+            <p className="text-sm font-medium text-foreground mb-3">{t.spreadsheet.pasteDescription}</p>
+            <Textarea
               value={pasteInput}
               onChange={(e) => setPasteInput(e.target.value)}
               placeholder={t.spreadsheet.pastePlaceholder}
-              className="w-full bg-transparent border border-[#D4D4D0] p-4 text-sm text-[#0E131B] placeholder:text-[#52617A] resize-none focus:outline-none focus:border-[#223159] min-h-[200px] font-light"
+              className="min-h-[200px]"
             />
-            <div className="flex items-center gap-3 mt-3">
-              <button
-                onClick={handleRestoreText}
-                disabled={!pasteInput.trim()}
-                className="px-5 py-2 text-xs font-medium bg-[#223159] text-[#FAFAFA] hover:bg-[#1A2648] transition-colors disabled:bg-[#223159]/55 disabled:cursor-not-allowed cursor-pointer"
-              >
+            <div className="flex items-center gap-3 mt-4">
+              <Button onClick={handleRestoreText} disabled={!pasteInput.trim()} variant="accent">
                 {t.spreadsheet.restoreButton}
-              </button>
+              </Button>
               {pasteResult && (
-                <button
-                  onClick={handleCopyResult}
-                  className="flex items-center gap-1.5 px-4 py-2 text-xs font-medium border border-[#D4D4D0] text-[#52617A] hover:text-[#0E131B] hover:border-[#223159] transition-colors cursor-pointer"
-                >
+                <Button onClick={handleCopyResult} variant="outline">
                   <Copy className="w-3 h-3" /> {t.spreadsheet.copied}
-                </button>
+                </Button>
               )}
             </div>
             {pasteResult && (
               <div className="mt-6">
-                <p className="text-xs font-medium text-[#0E131B] mb-2">{t.spreadsheet.restoreLabel}</p>
-                <div className="border border-[#D4D4D0] p-4 text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground font-light max-h-[400px] overflow-auto">
+                <p className="text-sm font-medium text-foreground mb-2">{t.spreadsheet.restoreLabel}</p>
+                <div className="border border-border bg-background/50 p-4 text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground max-h-[400px] overflow-auto rounded-xl">
                   {pasteResult}
                 </div>
               </div>
@@ -147,39 +131,37 @@ export function RestoreView({ sessionRef }: Props) {
           </div>
         ) : (
           <div className="max-w-md mx-auto">
-            <p className="text-xs font-medium text-[#0E131B] mb-3">{t.spreadsheet.uploadDescription}</p>
+            <p className="text-sm font-medium text-foreground mb-3">{t.spreadsheet.uploadDescription}</p>
             <input ref={restoreFileInputRef} type="file" accept=".xlsx" onChange={handleRestoreFile} className="hidden" />
             {redactedFile && restoredBlob ? (
-              <div className="flex items-center justify-between px-3 py-2.5 border border-[#D4D4D0] bg-[#F7F7F7]">
-                <div className="flex items-center gap-2 min-w-0">
-                  <FileSpreadsheet className="w-4 h-4 text-[#52617A] shrink-0" />
-                  <span className="text-xs text-[#0E131B] truncate">{redactedFile.name}</span>
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border border-border bg-white rounded-xl shadow-xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 bg-primary/5 border border-primary/15 flex items-center justify-center shrink-0 rounded-lg">
+                    <FileSpreadsheet className="w-4 h-4 text-primary" />
+                  </div>
+                  <span className="text-xs text-foreground truncate font-medium">{redactedFile.name}</span>
                   <button
                     onClick={() => { setRedactedFile(null); setRestoredBlob(null); }}
-                    className="text-muted-foreground hover:text-[#DC2626] transition-colors cursor-pointer"
+                    className="text-muted-foreground hover:text-destructive transition-colors cursor-pointer shrink-0"
                   >
                     <X className="w-3 h-3" />
                   </button>
                 </div>
-                <button
-                  onClick={handleRestoreDownload}
-                  className="flex items-center gap-1.5 px-3 py-1.5 border border-[#D4D4D0] bg-[#FFFFFF] text-[#0E131B] hover:bg-[#223159] hover:text-[#FAFAFA] transition-colors cursor-pointer text-xs font-medium"
-                >
+                <Button onClick={handleRestoreDownload} variant="accent" size="sm">
                   <Download className="w-3 h-3" />
                   {t.spreadsheet.downloadRestored}
-                </button>
+                </Button>
               </div>
             ) : (
               <button
                 onClick={() => restoreFileInputRef.current?.click()}
                 disabled={restoring}
-                className="w-full flex items-center justify-center gap-2 px-4 py-6 border border-dashed border-[#D4D4D0] hover:border-[#223159]/40 text-xs text-[#52617A] hover:text-[#0E131B] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                className="group w-full flex flex-col items-center gap-3 px-6 py-10 border-2 border-dashed border-border hover:border-primary/50 bg-background/40 hover:bg-primary/[0.03] text-sm text-muted hover:text-foreground transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed rounded-xl"
               >
-                {restoring ? (
-                  <>{t.spreadsheet.restoring}</>
-                ) : (
-                  <><Upload className="w-4 h-4" /> {t.spreadsheet.uploadRedacted}</>
-                )}
+                <div className="w-12 h-12 bg-primary/5 group-hover:bg-primary/10 border border-primary/15 flex items-center justify-center rounded-xl transition-colors">
+                  <Upload className="w-5 h-5 text-primary" />
+                </div>
+                {restoring ? t.spreadsheet.restoring : t.spreadsheet.uploadRedacted}
               </button>
             )}
           </div>

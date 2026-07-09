@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ENTITY_COLORS } from '../../core/types.ts';
 import type { ReplacementEntry } from '../../core/types.ts';
+import { EntityMark } from './EntityHighlight.tsx';
 import { Button } from '@/components/ui/button';
 import { Copy, Check, Shield } from 'lucide-react';
 import { useTranslation } from '../../i18n/LanguageContext.tsx';
@@ -56,18 +57,9 @@ export function TextOutput({ value, entries, loading }: TextOutputProps) {
 
     return segments.map((seg, i) =>
       seg.color ? (
-        <mark
-          key={i}
-          style={{
-            backgroundColor: seg.color + '30',
-            borderBottom: `2px solid ${seg.color}`,
-            color: seg.color,
-            padding: '1px 3px',
-            fontWeight: 500,
-          }}
-        >
+        <EntityMark key={i} color={seg.color} style={{ fontWeight: 500 }}>
           {seg.text}
-        </mark>
+        </EntityMark>
       ) : (
         <span key={i}>{seg.text}</span>
       )
@@ -76,12 +68,15 @@ export function TextOutput({ value, entries, loading }: TextOutputProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between h-11 relative border-b border-[#D4D4D0] px-4 bg-[#F7F7F7]">
-        <h3 className="font-display text-sm text-[#0E131B] font-medium">
-          {t.textOutput.title}
-        </h3>
+      <div className="flex items-center justify-between h-12 relative border-b border-border px-4 bg-background/60">
+        <div className="flex items-center gap-2">
+          <span className="w-6 h-6 rounded-md bg-accent/25 flex items-center justify-center text-[11px] font-bold text-primary">2</span>
+          <h3 className="font-display text-sm text-foreground font-semibold">
+            {t.textOutput.title}
+          </h3>
+        </div>
         {value && (
-          <Button variant="ghost" size="sm" onClick={handleCopy} className="gap-1.5 h-7 text-[#52617A] hover:bg-[#E8E8E5] hover:text-[#0E131B]">
+          <Button variant="ghost" size="sm" onClick={handleCopy} className="gap-1.5 h-7 text-muted hover:bg-secondary hover:text-foreground">
             {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
             {copied ? t.textOutput.copied : t.textOutput.copy}
           </Button>
@@ -90,44 +85,42 @@ export function TextOutput({ value, entries, loading }: TextOutputProps) {
       <div className="flex-1 min-h-[200px] p-4 text-foreground text-sm leading-relaxed whitespace-pre-wrap font-light">
         {loading ? (
           <div className="space-y-3">
-            <div className="skeleton-line h-3 w-full" />
-            <div className="skeleton-line h-3 w-[90%]" />
-            <div className="skeleton-line h-3 w-[75%]" />
-            <div className="skeleton-line h-3 w-[85%]" />
-            <div className="skeleton-line h-3 w-[60%]" />
+            <div className="skeleton-line h-3 w-full rounded" />
+            <div className="skeleton-line h-3 w-[90%] rounded" />
+            <div className="skeleton-line h-3 w-[75%] rounded" />
+            <div className="skeleton-line h-3 w-[85%] rounded" />
+            <div className="skeleton-line h-3 w-[60%] rounded" />
           </div>
         ) : value ? (
           <>
             {renderHighlighted()}
-            {/* Post-redaction hint */}
-            <div className="mt-6 pt-4 border-t border-[#D4D4D0]">
-              <p className="text-[10px] text-[#2D6A4F]/70 flex items-center gap-1.5">
+            <div className="mt-6 pt-4 border-t border-border">
+              <p className="text-[10px] text-success/70 flex items-center gap-1.5">
                 <Shield className="w-3 h-3" />
                 {t.textOutput.nextStepHint}
               </p>
             </div>
           </>
         ) : (
-          /* Empty state: numbered guide */
+          /* Empty state */
           <div className="flex flex-col items-center justify-center h-full min-h-[160px] text-center px-4">
-            <div className="w-10 h-10 bg-[#F7F7F7] border border-[#D4D4D0] flex items-center justify-center mb-4">
-              <Shield className="w-5 h-5 text-[#52617A]" />
+            <div className="w-10 h-10 bg-background border border-border flex items-center justify-center mb-4 rounded-md">
+              <Shield className="w-5 h-5 text-muted" />
             </div>
-            <p className="text-sm text-[#0E131B] font-medium mb-4 font-display">{t.textOutput.emptyStateHint}</p>
+            <p className="text-sm text-foreground font-medium mb-4 font-display">{t.textOutput.emptyStateHint}</p>
             <div className="space-y-2 text-left w-full max-w-[220px]">
               {[t.textOutput.emptyStateStep1, t.textOutput.emptyStateStep2, t.textOutput.emptyStateStep3].map((step, i) => (
                 <div key={i} className="flex items-start gap-2.5">
-                  <span className="w-4 h-4 bg-[#223159] text-[#FAFAFA] flex items-center justify-center flex-shrink-0 text-[9px] font-bold mt-0.5">{i + 1}</span>
-                  <p className="text-xs text-[#52617A] leading-relaxed">{step}</p>
+                  <span className="w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center flex-shrink-0 text-[9px] font-bold mt-0.5 rounded-sm">{i + 1}</span>
+                  <p className="text-xs text-muted leading-relaxed">{step}</p>
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-[#52617A] leading-relaxed mt-4 max-w-[240px] italic">{t.textOutput.emptyStateTip}</p>
+            <p className="text-[11px] text-muted leading-relaxed mt-4 max-w-[240px] italic">{t.textOutput.emptyStateTip}</p>
           </div>
         )}
       </div>
-      {/* Footer spacer */}
-      <div className="mt-auto border-t border-[#D4D4D0] px-4 py-2 bg-[#F7F7F7]">
+      <div className="mt-auto border-t border-border px-4 py-2 bg-background">
         <p className="label-meta text-muted-foreground">&nbsp;</p>
       </div>
     </div>
